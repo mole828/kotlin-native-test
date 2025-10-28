@@ -41,14 +41,16 @@ fun main() {
             }
         }
     }.apply {
-        monitor.subscribe(ApplicationStarted) { app ->
-            val readyForServe = Clock.System.now()
-            val costTime = readyForServe - beginProgram
-            app.log.info("prepare cost time: $costTime")
-        }
+//        // [INFO] (io.ktor.server.Application): Application started in 0.002 seconds. // 会默认输出
+//        monitor.subscribe(ApplicationStarted) { app ->
+//            val readyForServe = Clock.System.now()
+//            val costTime = readyForServe - beginProgram
+//            app.log.info("prepare cost time: $costTime")
+//        }
     }
-    server.addShutdownHook {
-        server.stop()
-    }
+//    // start() 默认添加了
+//    server.addShutdownHook {
+//        server.stop()
+//    }
     server.start(wait = true)
 }
