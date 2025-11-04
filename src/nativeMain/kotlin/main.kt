@@ -2,7 +2,10 @@ import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.log
 import io.ktor.server.cio.CIO
+import io.ktor.server.config.MapApplicationConfig
+import io.ktor.server.engine.EngineConnectorBuilder
 import io.ktor.server.engine.addShutdownHook
+import io.ktor.server.engine.applicationEnvironment
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -23,7 +26,23 @@ class TestClass {
 @OptIn(ExperimentalTime::class)
 fun main() {
     val beginProgram = Clock.System.now()
-    val server = embeddedServer(CIO, port = 8080, host = "127.0.0.1") {
+    val server = embeddedServer(
+        factory = CIO,
+        configure = {
+            // 多端口配置方式
+            connectors.add(EngineConnectorBuilder().apply {
+                port = 8080
+            })
+            connectors.add(EngineConnectorBuilder().apply {
+                port = 8081
+            })
+        },
+        environment = applicationEnvironment {
+            log = KtorSimpleLogger("ktor-default")
+        }
+//        port = 8080,
+    ) {
+        environment.config
         routing {
             get("/") {
                 TestClass().log.info("c!")
@@ -47,6 +66,7 @@ fun main() {
 //            val costTime = readyForServe - beginProgram
 //            app.log.info("prepare cost time: $costTime")
 //        }
+        environment.log
     }
 //    // start() 默认添加了
 //    server.addShutdownHook {
