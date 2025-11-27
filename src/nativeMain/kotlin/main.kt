@@ -1,3 +1,8 @@
+import io.github.domgew.kedis.KedisClient
+import io.github.domgew.kedis.KedisConfiguration
+import io.github.domgew.kedis.KedisConfiguration.Authentication
+import io.github.domgew.kedis.commands.KedisCommand
+import io.github.domgew.kedis.commands.KedisValueCommands
 import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.log
@@ -12,7 +17,11 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.logging.KtorSimpleLogger
 import io.ktor.util.logging.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.runBlocking
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 fun someFunction() {
@@ -25,22 +34,31 @@ class TestClass {
 
 @OptIn(ExperimentalTime::class)
 fun main() {
+    println("begin main()")
+    val kedisClient = KedisClient(
+        configuration = KedisConfiguration(
+            endpoint = KedisConfiguration.Endpoint.HostPort("localhost"),
+            authentication = Authentication.NoAutoAuth,
+            connectionTimeout = 200.milliseconds,
+        ),
+    )
+
     val beginProgram = Clock.System.now()
     val server = embeddedServer(
         factory = CIO,
-        configure = {
-            // 多端口配置方式
-            connectors.add(EngineConnectorBuilder().apply {
-                port = 8080
-            })
-            connectors.add(EngineConnectorBuilder().apply {
-                port = 8081
-            })
-        },
-        environment = applicationEnvironment {
-            log = KtorSimpleLogger("ktor-default")
-        }
-//        port = 8080,
+        //        configure = {
+        //            // 多端口配置方式
+        //            connectors.add(EngineConnectorBuilder().apply {
+        //                port = 8080
+        //            })
+        //            connectors.add(EngineConnectorBuilder().apply {
+        //                port = 8081
+        //            })
+        //        },
+        //        environment = applicationEnvironment {
+        //            log = KtorSimpleLogger("ktor-default")
+        //        }
+        port = 8080,
     ) {
         environment.config
         routing {
@@ -58,19 +76,24 @@ fun main() {
                 someFunction()
                 call.respondText("ok", ContentType.Text.Html)
             }
+
+            get("/count") {
+                val count = kedisClient.execute(KedisValueCommands.incr("test_count"))
+                call.respondText("count: $count", ContentType.Text.Html)
+            }
         }
     }.apply {
-//        // [INFO] (io.ktor.server.Application): Application started in 0.002 seconds. // 会默认输出
-//        monitor.subscribe(ApplicationStarted) { app ->
-//            val readyForServe = Clock.System.now()
-//            val costTime = readyForServe - beginProgram
-//            app.log.info("prepare cost time: $costTime")
-//        }
-        environment.log
+        // [INFO] (io.ktor.server.Application): Application started in 0.002 seconds. // 会默认输出
+        monitor.subscribe(ApplicationStarted) { app ->
+            val readyForServe = Clock.System.now()
+            val costTime = readyForServe - beginProgram
+            app.log.info("prepare cost time: $costTime")
+        }
     }
-//    // start() 默认添加了
-//    server.addShutdownHook {
-//        server.stop()
-//    }
+    //    // start() 默认添加了
+    //    server.addShutdownHook {
+    //        server.stop()
+    //    }
     server.start(wait = true)
+
 }

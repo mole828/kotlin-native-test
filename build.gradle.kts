@@ -35,6 +35,7 @@ kotlin {
             dependencies {
                 implementation("io.ktor:ktor-server-core:$ktor_version")
                 implementation("io.ktor:ktor-server-cio:$ktor_version")
+                implementation("io.github.domgew:kedis:0.0.11")
             }
         }
         val nativeTest by getting {
