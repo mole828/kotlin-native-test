@@ -36,6 +36,8 @@ kotlin {
                 implementation("io.ktor:ktor-server-core:$ktor_version")
                 implementation("io.ktor:ktor-server-cio:$ktor_version")
                 implementation("io.github.domgew:kedis:0.0.11")
+                implementation("io.github.smyrgeorge:sqlx4k-postgres:1.5.0")
+
             }
         }
         val nativeTest by getting {

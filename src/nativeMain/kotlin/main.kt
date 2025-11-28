@@ -3,6 +3,10 @@ import io.github.domgew.kedis.KedisConfiguration
 import io.github.domgew.kedis.KedisConfiguration.Authentication
 import io.github.domgew.kedis.commands.KedisCommand
 import io.github.domgew.kedis.commands.KedisValueCommands
+import io.github.smyrgeorge.sqlx4k.ConnectionPool
+import io.github.smyrgeorge.sqlx4k.Driver
+import io.github.smyrgeorge.sqlx4k.Statement
+import io.github.smyrgeorge.sqlx4k.postgres.PostgreSQL
 import io.ktor.http.ContentType
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.log
@@ -43,6 +47,16 @@ fun main() {
         ),
     )
 
+    val db = PostgreSQL(
+        url = "postgresql://localhost:5432/app",
+        username = "app",
+        password = "app",
+        options = ConnectionPool.Options.builder().apply {
+            maxConnections(10)
+            minConnections(3)
+        }.build()
+    )
+
     val beginProgram = Clock.System.now()
     val server = embeddedServer(
         factory = CIO,
@@ -80,6 +94,15 @@ fun main() {
             get("/count") {
                 val count = kedisClient.execute(KedisValueCommands.incr("test_count"))
                 call.respondText("count: $count", ContentType.Text.Html)
+            }
+
+            get("/customer") {
+                val statement = Statement
+                    .create("select * from customer where id = :id")
+                    .bind("id", 1)
+                val a = db.fetchAll(statement).getOrNull()
+                val nick = a?.single()?.get("nick")?.asString()
+                call.respondText("customer: $nick", ContentType.Text.Html)
             }
         }
     }.apply {
