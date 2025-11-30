@@ -35,9 +35,9 @@ kotlin {
             dependencies {
                 implementation("io.ktor:ktor-server-core:$ktor_version")
                 implementation("io.ktor:ktor-server-cio:$ktor_version")
-                implementation("io.github.domgew:kedis:0.0.11")
-                implementation("io.github.smyrgeorge:sqlx4k-postgres:1.5.0")
-
+                implementation("io.github.domgew:kedis:0.0.11") // redis
+                implementation("io.github.smyrgeorge:sqlx4k-postgres:1.5.0") // postgres
+                implementation("dev.kourier:amqp-client:0.3.2") // rabbitmq
             }
         }
         val nativeTest by getting {
