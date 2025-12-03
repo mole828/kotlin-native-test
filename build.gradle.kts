@@ -31,20 +31,20 @@ kotlin {
         }
     }
     sourceSets {
-        val nativeMain by getting {
+        val commonMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-server-core:$ktor_version")
                 implementation("io.ktor:ktor-server-cio:$ktor_version")
                 implementation("io.github.domgew:kedis:0.0.11")
                 implementation("io.github.smyrgeorge:sqlx4k-postgres:1.5.0")
-
             }
         }
-        val nativeTest by getting {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("io.ktor:ktor-server-test-host:$ktor_version")
+                implementation("io.ktor:ktor-server-test-host:${ktor_version}")
             }
         }
+        val nativeMain by getting {}
     }
 }
